@@ -97,22 +97,14 @@ namespace Native
     void InitializeAll()
     {
         Imagebase = (uintptr_t)GetModuleHandleA(nullptr);
-
-        uintptr_t Address = Utils::FindPattern(Patterns::GObjects, true, 3);
-        CheckNullFatal(Address, "Failed to find GObjects");
-        AddressToFunction(Address, UObject::GObjects);
-
-        Address = Utils::FindPattern(Patterns::Free);
+        
+        uintptr_t Address = Utils::FindPattern(Patterns::Free);
         CheckNullFatal(Address, "Failed to find Free");
         AddressToFunction(Address, FMemory_Free);
 
         Address = Utils::FindPattern(Patterns::Realloc);
         CheckNullFatal(Address, "Failed to find Realloc");
         AddressToFunction(Address, FMemory_Realloc);
-
-        Address = Utils::FindPattern(Patterns::Malloc);
-        CheckNullFatal(Address, "Failed to find Malloc");
-        AddressToFunction(Address, FMemory_Malloc);
 
         Address = Utils::FindPattern(Patterns::FNameToString);
         CheckNullFatal(Address, "Failed to find FNameToString");
@@ -130,7 +122,7 @@ namespace Native
         CheckNullFatal(Address, "Failed to find InitHost");
         AddressToFunction(Address, OnlineBeaconHost::InitHost);
 
-        Address = Utils::FindPattern(Patterns::Beacon_NotifyControlMessage);
+        Address = Utils::FindPattern(Patterns::Beacon_NotifyControlMessage2);
         CheckNullFatal(Address, "Failed to find NotifyControlMessage");
         AddressToFunction(Address, OnlineBeaconHost::NotifyControlMessage);
 
@@ -138,11 +130,11 @@ namespace Native
         CheckNullFatal(Address, "Failed to find WelcomePlayer");
         AddressToFunction(Address, World::WelcomePlayer);
 
-        Address = Utils::FindPattern(Patterns::World_NotifyControlMessage);
+        Address = Utils::FindPattern(Patterns::World_NotifyControlMessage2);
         CheckNullFatal(Address, "Failed to find NotifyControlMessage");
         AddressToFunction(Address, World::NotifyControlMessage);
 
-        Address = Utils::FindPattern(Patterns::SpawnPlayActor);
+        Address = Utils::FindPattern(Patterns::SpawnPlayActor2);
         CheckNullFatal(Address, "Failed to find SpawnPlayActor");
         AddressToFunction(Address, World::SpawnPlayActor);
 
@@ -193,6 +185,13 @@ namespace Native
         Address = Utils::FindPattern(Patterns::GetPlayerViewPoint);
         CheckNullFatal(Address, "Failed to find PlayerController::GetPlayerViewPoint");
         AddressToFunction(Address, PlayerController::GetPlayerViewPoint);
+        
+        // Crash fix for 4.5, taken from Osmium
+		*reinterpret_cast<char*>(Imagebase + 0xAEC475 + 0) = 0xE9;
+		*reinterpret_cast<char*>(Imagebase + 0xAEC475 + 1) = 0x39;
+		*reinterpret_cast<char*>(Imagebase + 0xAEC475 + 2) = 0x02;
+		*reinterpret_cast<char*>(Imagebase + 0xAEC475 + 3) = 0x00;
+		*reinterpret_cast<char*>(Imagebase + 0xAEC475 + 4) = 0x00;
 
         ProcessEvent = reinterpret_cast<decltype(ProcessEvent)>(GetEngine()->Vtable[0x40]);
     }
